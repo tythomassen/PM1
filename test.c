@@ -1,18 +1,22 @@
 #include <stdio.h>
 
 int main(void) {
-    int number = 42;
-    float pi = 3.14159;
-    char letter = 'A';
-    char word[] = "Hello";
-    int hexNumber = 255;
+    int temp;
+    scanf("%d", &temp);
 
-    printf("Integer (%%d): %d\n", number);
-    printf("Float (%%f): %f\n", pi);
-    printf("Float with width/precision (%%8.2f): %8.2f\n", pi);
-    printf("Character (%%c): %c\n", letter);
-    printf("String (%%s): %s\n", word);
-    printf("Hexadecimal (%%x): %x\n", hexNumber);
+    if (temp < -40) {
+        printf("invalid\n");
+    } else if (temp <= 31) { 
+        printf("freezing\n"); 
+    } else if (temp <= 59) { 
+        printf("cold\n");
+    } else if (temp <= 79) { 
+        printf("warm\n");
+    } else if (temp <= 120) { 
+        printf("hot\n");
+    } else {                
+        printf("invalid\n");
+    }
 
     return 0;
 }
