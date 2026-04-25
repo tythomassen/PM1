@@ -54,51 +54,51 @@ LogLevel parse_level(const char *str) {
     for (int i = 0; i < LEVEL_COUNT; i++) { //Count though error levels
         if (strcmp(str, level_names[i]) == 0) return (LogLevel)i; //Find error that fits 
     }
-    return (LogLevel)-1; 
+    return (LogLevel)-1;  //Error Status
 }
 
-int parse_log_line(const char *line, LogEntry *entry) {
-    int year, month, day, hour, minute, second;
-    char level_str[16];
-    char message_buf[MAX_LINE_LENGTH];
+int parse_log_line(const char *line, LogEntry *entry) { 
+    int year, month, day, hour, minute, second; // declaring int vars
+    char level_str[16];  // Reserve 16 Bytes for this string
+    char message_buf[MAX_LINE_LENGTH]; // Buffer to prevent overflow
 
     /* Format: [YYYY-MM-DD HH:MM:SS] LEVEL Message */
     int matched = sscanf(line, "[%d-%d-%d %d:%d:%d] %15s %1023[^\n]",
-                         &year, &month, &day,
+                         &year, &month, &day, 
                          &hour, &minute, &second,
                          level_str, message_buf);
 
-    if (matched != 8) return -1;
-    if (line[0] != '[') return -1;
+    if (matched != 8) return -1; // If all 8 feild are there its wrong return -1
+    if (line[0] != '[') return -1; // If donst start with [ ] it wrong -1
 
-    LogLevel level = parse_level(level_str);
-    if ((int)level == -1) return -1;
+    LogLevel level = parse_level(level_str); //create number from error level 
+    if ((int)level == -1) return -1; // If level dosnt exist Error -1
 
-    entry->year = year;
+    entry->year = year; // Store data in this struct
     entry->month = month;
     entry->day = day;
     entry->hour = hour;
     entry->minute = minute;
     entry->second = second;
     entry->level = level;
-    entry->message = malloc(strlen(message_buf) + 1);
-    if (entry->message == NULL) return -1;
-    strcpy(entry->message, message_buf);
+    entry->message = malloc(strlen(message_buf) + 1); // Memory for message +1 for NULL Term
+    if (entry->message == NULL) return -1;  // Null check
+    strcpy(entry->message, message_buf); // Copy messege into memory we just allocated
 
-    return 0;
+    return 0; // Success
 }
 
 int load_log_file(const char *filename, LogStore *store) {
-    if (init_log_store(store) != 0) return -1;
+    if (init_log_store(store) != 0) return -1; //
 
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL) return -1;
+    FILE *fp = fopen(filename, "r"); // Open file Read mode
+    if (fp == NULL) return -1; // Fail if cant open file
 
-    char line[MAX_LINE_LENGTH];
-    int line_num = 0;
+    char line[MAX_LINE_LENGTH]; //Buffer to hold lines hence length of longest line
+    int line_num = 0; // Start at first line
 
     while (fgets(line, sizeof(line), fp) != NULL) {
-        line_num++;
+        line_num++; // Walk though each of the lines 
 
         /* Strip trailing newline / carriage return */
         size_t len = strlen(line);
@@ -108,16 +108,16 @@ int load_log_file(const char *filename, LogStore *store) {
         LogEntry entry;
         if (parse_log_line(line, &entry) != 0) {
             fprintf(stderr, "WARNING: Skipping malformed line %d\n", line_num);
-            continue;
+            continue; // Skip
         }
 
-        if (add_entry(store, &entry) != 0) {
-            free(entry.message);
-            fclose(fp);
+        if (add_entry(store, &entry) != 0) { // Add entry to store
+            free(entry.message); //Free memory avoid leak
+            fclose(fp);  // Close file avoid errors
             return -1;
         }
     }
 
-    fclose(fp);
-    return 0;
+    fclose(fp); //Close
+    return 0; // Success
 }
